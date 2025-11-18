@@ -1,0 +1,37 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: 22
+          script: |
+            echo ">>> Entrando na pasta do projeto"
+            cd /opt/rpa-cnd
+
+            echo ">>> Atualizando código do GitHub"
+            git pull origin main
+
+            echo ">>> Instalando dependências (se tiver novas)"
+            npm install
+
+            echo '>>> Reiniciando PM2 (processo rpa-cnd)'
+            pm2 restart rpa-cnd || pm2 start api.js --name rpa-cnd
+
+            echo ">>> Status dos processos PM2"
+            pm2 ls
