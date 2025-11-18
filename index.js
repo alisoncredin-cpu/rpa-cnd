@@ -1,3 +1,4 @@
+console.log("Deploy automático funcionando!");
 const puppeteer = require('puppeteer');
 
 async function emitirCND() {
